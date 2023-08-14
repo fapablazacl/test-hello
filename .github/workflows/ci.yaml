@@ -1,0 +1,31 @@
+name: CI Pipeline
+on: [push]
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        cmake-build-type: [Debug, Release]
+        config:
+          - os: ubuntu-latest
+            generator: Unix Makefiles
+
+          - os: macos-latest
+            generator: Unix Makefiles
+
+          - os: windows-latest
+            generator: NMake Makefiles
+
+    runs-on: ${{ matrix.config.os }}
+    steps:
+      - name: Checkout Source Code and Submodules
+        uses: actions/checkout@v3
+
+      - uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run:
+          cmake -G "${{matrix.config.generator}}" -S . -B build -DCMAKE_BUILD_TYPE=${{ matrix.cmake-build-type }}
+
+      - name: Build
+        run: cmake --build build
